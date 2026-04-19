@@ -1,31 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AtrExercise from './exercises/AtrExercise';
-import ProblemSolvingExercise from './exercises/ProblemSolvingExercise';
-import SocraticExercise from './exercises/SocraticExercise';
-import RelaxationExercise from './exercises/RelaxationExercise';
+import AdminPanel from './pages/AdminPanel';
 import { useAmbientAudio } from './components/Shared';
 
 export default function App() {
+  const [path, setPath] = useState(window.location.pathname);
+
+  // Listener simples para mudanças de rota se necessário (embora o reload já resolva)
+  useEffect(() => {
+    const handleLocationChange = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
   const params = new URLSearchParams(window.location.search);
   const emailDaUrl = params.get('email') || '';
-  const exercicioDaUrl = params.get('exercicio') || 'rpd'; // default
 
   const { playing, toggle: toggleAudio, start: startAudio } = useAmbientAudio();
 
   // Props compartilhadas
   const sharedProps = { emailDaUrl, playing, toggleAudio, startAudio };
 
-  // Router simples
-  switch (exercicioDaUrl.toLowerCase()) {
-    case 'resolucao':
-      return <ProblemSolvingExercise {...sharedProps} />;
-    case 'socratico':
-      return <SocraticExercise {...sharedProps} />;
-    case 'respiracao':
-      return <RelaxationExercise {...sharedProps} />;
-    case 'rpd':
-    case 'atr':
-    default:
-      return <AtrExercise {...sharedProps} />;
+  if (path === '/admin') {
+    return <AdminPanel />;
   }
+
+  return <AtrExercise {...sharedProps} />;
 }
